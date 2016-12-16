@@ -9,6 +9,8 @@
 #import "BOXAbstractSession_Private.h"
 #import "BOXKeychainItemWrapper.h"
 #import "BOXUser.h"
+#import "BOXURLSessionIdentifier.h"
+#import "BOXURLSessionDelegate.h"
 #import "BOXUser_Private.h"
 #import "BOXRequest_Private.h"
 
@@ -28,7 +30,7 @@ static NSString *staticKeychainIdentifierPrefix;
 static NSString *staticKeychainAccessGroup;
 
 @interface BOXAbstractSession ()
-
+@property (nonatomic, readonly) NSLock *sessionLock;
 @end
 
 @implementation BOXAbstractSession
@@ -37,6 +39,7 @@ static NSString *staticKeychainAccessGroup;
 {
     if (self = [super init]) {
         _credentialsPersistenceEnabled = YES;
+        _sessionLock = [[NSLock alloc] init];
     }
     
     return self;
@@ -51,6 +54,46 @@ static NSString *staticKeychainAccessGroup;
     }
     
     return self;
+}
+
+#pragma mark - URL Sessions
+
+@synthesize defaultSession = _defaultSession;
+@synthesize backgroundSession = _backgroundSession;
+
+- (NSURLSession *)defaultSession
+{
+    NSURLSession *session;
+    [self.sessionLock lock];
+    {
+        if (!_defaultSession) {
+            NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
+            _defaultSession = [NSURLSession sessionWithConfiguration:config];
+        }
+        session = _defaultSession;
+    }
+    [self.sessionLock unlock];
+
+    return session;
+}
+
+- (NSURLSession *)backgroundSession
+{
+    NSURLSession *session;
+    [self.sessionLock lock];
+    {
+        if (!_backgroundSession) {
+            BOXAssert(self.user, @"A user is required for upload and download.");
+            BOXURLSessionIdentifier *identifier = [[BOXURLSessionIdentifier alloc] initWithUser:self.user];
+            NSURLSessionConfiguration *config = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:identifier.stringValue];
+            BOXURLSessionDelegate *sessionDelegate = [[BOXURLSessionDelegate alloc] init];
+            _backgroundSession = [NSURLSession sessionWithConfiguration:config delegate:sessionDelegate delegateQueue:nil];
+        }
+        session = _backgroundSession;
+    }
+    [self.sessionLock unlock];
+
+    return session;
 }
 
 #pragma mark - Access Token Authorization

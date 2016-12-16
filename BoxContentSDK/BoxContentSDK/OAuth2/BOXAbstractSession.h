@@ -64,6 +64,20 @@ extern NSString *const BOXUserIDKey;
  */
 @property (nonatomic, readwrite, weak) BOXAPIQueueManager *queueManager;
 
+#pragma mark Sessions
+
+/**
+ * A session which is suitable for requests which do not need to continue if the app is killed. This should include most
+ * operations, except uploads or downloads.
+ */
+@property (nonatomic, readonly, strong) NSURLSession *defaultSession;
+
+/**
+ * A session which is suitable for requests which must be continued in the background. This should probably just be
+ * uploads and downloads.
+ */
+@property (nonatomic, readonly, strong) NSURLSession *backgroundSession;
+
 #pragma mark Authorization Properties
 /** @name Authorization Properties */
 
@@ -102,7 +116,7 @@ extern NSString *const BOXUserIDKey;
 /**
  * Box user associated with the credentials.
  */
-@property (nonatomic, readonly , strong) BOXUserMini *user;
+@property (nonatomic, readonly, strong) BOXUserMini *user;
 
 #pragma mark Initializers
 /** @name Initialization */
