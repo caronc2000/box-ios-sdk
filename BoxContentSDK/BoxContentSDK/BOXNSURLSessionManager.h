@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class BOXAPIDataOperation;
+
 /**
  This class is responsible for creating different NSURLSessionTask
  */
@@ -27,7 +29,7 @@
 /**
  Create a NSURLSessionDownloadTask which can be run in the background
  */
-- (NSURLSessionDownloadTask *)createDownloadTaskWithRequest:(NSURLRequest *)request;
+- (NSURLSessionDownloadTask *)createDownloadTaskWithRequest:(NSURLRequest *)request operation:(BOXAPIDataOperation *)operation;
 
 /**
  Create a NSURLSessionDownloadTask to be resumed

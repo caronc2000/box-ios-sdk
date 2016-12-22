@@ -76,9 +76,11 @@
     return [self.backgroundSession dataTaskWithURL:url];
 }
 
-- (NSURLSessionDownloadTask *)createDownloadTaskWithRequest:(NSURLRequest *)request
+- (NSURLSessionDownloadTask *)createDownloadTaskWithRequest:(NSURLRequest *)request operation:(BOXAPIDataOperation *)operation
 {
-    return [self.backgroundSession downloadTaskWithRequest:request];
+    NSURLSessionTask *task = [self.backgroundSession downloadTaskWithRequest:request];
+    [self.sessionDelegate mapSessionTaskId:task.taskIdentifier withOperation:operation];
+    return task;
 }
 
 - (NSURLSessionDownloadTask *)createDownloadTaskWithResumeData:(NSData *)resumeData

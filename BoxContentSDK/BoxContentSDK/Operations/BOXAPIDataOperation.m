@@ -27,6 +27,8 @@
 
 @property (nonatomic, readwrite, assign) unsigned long long bytesReceived;
 
+@property (nonatomic, readwrite, strong) NSURLSessionTask *sessionTask;
+
 - (void)writeDataToOutputStream;
 
 - (long long)contentLength;
@@ -47,6 +49,7 @@
 @synthesize receivedDataBuffer = _receivedDataBuffer;
 @synthesize outputStreamHasSpaceAvailable = _outputStreamHasSpaceAvailable;
 @synthesize bytesReceived = _bytesReceived;
+@synthesize sessionTask = _sessionTask;
 
 - (id)initWithURL:(NSURL *)URL HTTPMethod:(NSString *)HTTPMethod body:(NSDictionary *)body queryParams:(NSDictionary *)queryParams session:(BOXAbstractSession *)session
 {
@@ -79,7 +82,16 @@
 
 - (BOOL)shouldUseSessionTask
 {
-    return NO;
+    return YES;
+}
+
+- (NSURLSessionTask *)sessionTask
+{
+    if (_sessionTask == nil) {
+        __weak BOXAPIDataOperation *weakSelf = self;
+        _sessionTask = [self.session.urlSessionManager createDownloadTaskWithRequest:self.APIRequest operation:weakSelf];
+    }
+    return _sessionTask;
 }
 
 - (void)processResponseData:(NSData *)data

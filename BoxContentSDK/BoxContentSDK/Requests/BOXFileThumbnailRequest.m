@@ -10,7 +10,7 @@
 
 @interface BOXFileThumbnailRequest ()
 
-@property (nonatomic, readonly, strong) NSOutputStream *outputStream;
+@property (nonatomic, readonly, strong) NSString *destinationPath;
 
 @end
 
@@ -20,7 +20,8 @@
 {
     if (self = [super init]) {
         _fileID = fileID;
-        _outputStream = [[NSOutputStream alloc] initToMemory];
+        NSString *uniqueName = [NSString stringWithFormat:@"%@_%@", fileID, [[NSProcessInfo processInfo] globallyUniqueString]];
+        _destinationPath = [NSTemporaryDirectory() stringByAppendingPathComponent:uniqueName];
     }
     return self;
 }
@@ -66,7 +67,7 @@
                                                        successBlock:nil
                                                        failureBlock:nil];
     dataOperation.modelID = self.fileID;
-    dataOperation.outputStream = self.outputStream;
+    dataOperation.destinationPath = self.destinationPath;
     dataOperation.isSmallDownloadOperation = YES;
     
     [self addSharedLinkHeaderToRequest:dataOperation.APIRequest];
@@ -88,9 +89,9 @@
             };
         }
 
-        NSOutputStream *outputStream = self.outputStream;
+        NSString *destinationPath = self.destinationPath;
         dataOperation.successBlock = ^(NSString *modelID, long long expectedTotalBytes) {
-            NSData *data = [outputStream propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+            NSData *data = [NSData dataWithContentsOfFile:destinationPath];
             UIImage *image = [UIImage imageWithData:data scale:[[UIScreen mainScreen] scale]];
             [BOXDispatchHelper callCompletionBlock:^{
                 completionBlock(image, nil);

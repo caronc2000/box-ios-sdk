@@ -65,6 +65,8 @@ typedef void (^BOXAPIDataProgressBlock)(long long expectedTotalBytes, unsigned l
  */
 @property (nonatomic, readwrite, strong) NSOutputStream *outputStream;
 
+//support NSURLSession
+@property (nonatomic, readwrite, strong) NSString *destinationPath;
 /** @name Callbacks */
 
 /**
