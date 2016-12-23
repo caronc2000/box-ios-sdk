@@ -299,7 +299,7 @@
 - (void)sendRevokeRequest
 {
     // We don't go through any of our regular queues/operations because those get shut down upon logout.
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/oauth2/revoke", BOXAPIBaseURL]]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@/oauth2/revoke", self.APIBaseURLString]]];
     [request setHTTPMethod:@"POST"];
     [request setValue:@"application/x-www-form-urlencoded charset=utf-8" forHTTPHeaderField:@"Content-Type"];
     

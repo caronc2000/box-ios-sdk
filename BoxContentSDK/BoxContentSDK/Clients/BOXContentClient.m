@@ -22,6 +22,11 @@
 #import "BOXUserRequest.h"
 #import "BOXContentClient+User.h"
 
+// Default API URLs
+NSString *const BOXDefaultAPIBaseURL = @"https://api.box.com/2.0";
+NSString *const BOXDefaultAPIAuthBaseURL = @"https://account.box.com/api";
+NSString *const BOXDefaultAPIUploadBaseURL = @"https://upload.box.com/api/2.1";
+
 @interface BOXContentClient ()
 
 @property (nonatomic, readwrite, strong) BOXSharedLinkHeadersHelper *sharedLinksHeaderHelper;
@@ -31,11 +36,13 @@
 
 @implementation BOXContentClient
 
-@synthesize APIBaseURL = _APIBaseURL;
 @synthesize OAuth2Session = _OAuth2Session;
 @synthesize appSession = _appSession;
 @synthesize queueManager = _queueManager;
 
+static NSString *staticAPIBaseURL;
+static NSString *staticAPIAuthBaseURL;
+static NSString *staticAPIUploadBaseURL;
 static NSString *staticClientID;
 static NSString *staticClientSecret;
 static NSString *staticRedirectURIString;
@@ -165,9 +172,6 @@ static BOXContentClient *defaultInstance = nil;
 {
     if (self = [super init])
     {
-        [self setAPIBaseURL:BOXAPIBaseURL];
-        [self setAPIAuthBaseURL:BOXAPIAuthBaseURL];
-        
         // the circular reference between the queue manager and the session is necessary
         // because sessions enqueue API operations to fetch access tokens and the queue
         // manager uses the session as a lock object when enqueuing operations.
@@ -175,8 +179,8 @@ static BOXContentClient *defaultInstance = nil;
 
         _OAuth2Session = [[BOXParallelOAuth2Session alloc] initWithClientID:staticClientID
                                                                      secret:staticClientSecret
-                                                                 APIBaseURL:_APIBaseURL
-                                                             APIAuthBaseURL:_APIAuthBaseURL
+                                                                 APIBaseURL:[[self class] APIBaseURL]
+                                                             APIAuthBaseURL:[[self class] APIAuthBaseURL]
                                                                queueManager:_queueManager];
         _queueManager.session = self.session;
         
@@ -218,7 +222,8 @@ static BOXContentClient *defaultInstance = nil;
         [self.session restoreCredentialsFromKeychainForUserWithID:user.modelID];
         
         if (((BOXOAuth2Session *)self.session).refreshToken == nil) {
-            self.session = [[BOXAppUserSession alloc] initWithAPIBaseURL:self.APIBaseURL queueManager:self.queueManager];
+            self.session = [[BOXAppUserSession alloc] initWithAPIBaseURL:[[self class] APIBaseURL]
+                                                            queueManager:self.queueManager];
             [self.session restoreCredentialsFromKeychainForUserWithID:user.modelID];
         }
     }
@@ -292,20 +297,6 @@ static BOXContentClient *defaultInstance = nil;
     return staticAppToAppBoxAuthenticationEnabled;
 }
 
-- (void)setAPIBaseURL:(NSString *)APIBaseURL
-{
-    _APIBaseURL = APIBaseURL;
-    self.session.APIBaseURLString = _APIBaseURL;
-}
-
-- (void)setAPIAuthBaseURL:(NSString *)APIAuthBaseURL
-{
-    _APIAuthBaseURL = APIAuthBaseURL;
-    if ([self.session isKindOfClass:[BOXOAuth2Session class]]) {
-        ((BOXOAuth2Session *)self.session).APIAuthBaseURLString = _APIAuthBaseURL;
-    }
-}
-
 - (void)setUserAgentPrefix:(NSString *)userAgentPrefix
 {
     _userAgentPrefix = userAgentPrefix;
@@ -366,7 +357,8 @@ static BOXContentClient *defaultInstance = nil;
     // Since BOXContentClient instances are defaulted to OAuth2 instead of App Users, a BOXAppUserSession must be initialized.
     // The OAuth2Session must be nil-ed out because "session" returns the first non-nil session instance (chosen between AppSession and OAuth2Session).
     if ([self.session isKindOfClass:[BOXOAuth2Session class]]) {
-        self.session = [[BOXAppUserSession alloc] initWithAPIBaseURL:self.APIBaseURL queueManager:self.queueManager];
+        self.session = [[BOXAppUserSession alloc] initWithAPIBaseURL:[[self class] APIBaseURL]
+                                                        queueManager:self.queueManager];
         self.session.userAgentPrefix = self.userAgentPrefix;
     }
     
@@ -409,5 +401,58 @@ static BOXContentClient *defaultInstance = nil;
     onceTokenForDefaultClient = 0;
     [_SDKClients removeAllObjects];
 }
+
+#pragma mark - API URLs
+
++ (NSString *)APIBaseURL
+{
+    if (staticAPIBaseURL.length == 0) {
+        staticAPIBaseURL = BOXDefaultAPIBaseURL;
+    }
+    return staticAPIBaseURL;
+}
+
++ (NSString *)APIAuthBaseURL
+{
+    if (staticAPIAuthBaseURL.length == 0) {
+        staticAPIAuthBaseURL = BOXDefaultAPIAuthBaseURL;
+    }
+    return staticAPIAuthBaseURL;
+}
+
++ (NSString *)APIUploadBaseURL
+{
+    if (staticAPIUploadBaseURL.length == 0) {
+        staticAPIUploadBaseURL = BOXDefaultAPIUploadBaseURL;
+    }
+    return staticAPIUploadBaseURL;
+}
+
++ (void)setAPIBaseURL:(NSString *)APIBaseURL
+{
+    staticAPIBaseURL = APIBaseURL;
+    
+    for (BOXContentClient *client in _SDKClients) {
+        client.session.APIBaseURLString = APIBaseURL;
+    }
+}
+
++ (void)setAPIAuthBaseURL:(NSString *)APIAuthBaseURL
+{
+    staticAPIAuthBaseURL = APIAuthBaseURL;
+    
+    for (BOXContentClient *client in _SDKClients) {
+        if ([client.session isKindOfClass:[BOXOAuth2Session class]]) {
+            BOXOAuth2Session *oauth2Session = (BOXOAuth2Session *)client.session;
+            oauth2Session.APIAuthBaseURLString = APIAuthBaseURL;
+        }
+    }
+}
+
++ (void)setAPIUploadBaseURL:(NSString *)APIUploadBaseURL
+{
+    staticAPIUploadBaseURL = APIUploadBaseURL;
+}
+
 
 @end

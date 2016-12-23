@@ -33,16 +33,6 @@
 @property (nonatomic, readonly, strong) BOXAbstractSession *session;
 
 /**
- *  The base URL for all API operations except for Authentication and Upload.
- */
-@property (nonatomic, readwrite, strong) NSString *APIBaseURL;
-
-/**
- *  The base URL for all API Authentication operations.
- */
-@property (nonatomic, readwrite, strong) NSString *APIAuthBaseURL;
-
-/**
  *  The custom prefix for the user agent. If set, the prefix will be appended with ; followed by the default Box SDK user agent string.
  */
 @property (nonatomic, readwrite, strong) NSString *userAgentPrefix;
@@ -180,4 +170,13 @@
  **/ 
 - (void)setSharedLinkStorageDelegate:(id <BOXSharedLinkStorageProtocol>)delegate;
 
+/**
+ *  API base URLs.
+ **/
++ (NSString *)APIBaseURL;
++ (NSString *)APIAuthBaseURL;
++ (NSString *)APIUploadBaseURL;
++ (void)setAPIBaseURL:(NSString *)APIBaseURL;
++ (void)setAPIAuthBaseURL:(NSString *)APIAuthBaseURL;
++ (void)setAPIUploadBaseURL:(NSString *)APIUploadBaseURL;
 @end
