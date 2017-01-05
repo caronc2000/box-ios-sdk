@@ -196,4 +196,9 @@
  */
 @property (nonatomic, readonly, assign) BOOL isBookmark;
 
+/**
+ *  The tags that this item has assigned. An array of strings.
+ */
+@property (nonatomic, readwrite, strong) NSArray *tags;
+
 @end
