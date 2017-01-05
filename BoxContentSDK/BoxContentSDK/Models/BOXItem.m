@@ -216,7 +216,16 @@
             [collections addObject:[[BOXCollection alloc] initWithJSON:dict]];
         }
         self.collections = collections;
-        
+
+        NSArray *tagsJSONArray = [NSJSONSerialization box_ensureObjectForKey:BOXAPIObjectKeyTags
+                                                                       inDictionary:JSONResponse
+                                                                    hasExpectedType:[NSArray class]
+                                                                        nullAllowed:YES];
+        NSMutableArray *tags = [NSMutableArray arrayWithCapacity:collectionsJSONArray.count];
+        for (NSString *tag in tagsJSONArray) {
+            [tags addObject:[[NSString alloc] initWithString:tag]];
+        }
+        self.tags = tags;        
     }
     return self;
 }
