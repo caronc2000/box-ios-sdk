@@ -227,6 +227,7 @@
         }
         self.tags = tags;        
     }
+    
     return self;
 }
 
