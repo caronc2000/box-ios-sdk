@@ -4,6 +4,8 @@
 Box iOS SDK
 ===================
 
+richardg0510
+
 This SDK makes it easy to use Box's [Content API](https://developers.box.com/docs/) in your iOS projects.
 
 Developer Setup
