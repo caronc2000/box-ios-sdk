@@ -339,7 +339,8 @@
                        BOXAPIObjectKeyIsPackage,
                        BOXAPIObjectKeyAllowedSharedLinkAccessLevels,
                        BOXAPIObjectKeyCollections,
-                       BOXAPIObjectKeyRepresentations];
+                       BOXAPIObjectKeyRepresentations,
+                       BOXAPIObjectKeyTags];
     return array;
 #else
     NSArray *array = @[BOXAPIObjectKeyType,
@@ -370,7 +371,8 @@
                        BOXAPIObjectKeyExtension,
                        BOXAPIObjectKeyIsPackage,
                        BOXAPIObjectKeyAllowedSharedLinkAccessLevels,
-                       BOXAPIObjectKeyCollections];
+                       BOXAPIObjectKeyCollections,
+                       BOXAPIObjectKeyTags];
     return array;
 #endif
 }
